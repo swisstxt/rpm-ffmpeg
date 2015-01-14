@@ -1,7 +1,7 @@
 HOME=$(shell pwd)
 VERSION="1"
 RELEASE=$(shell ./make_helper/get-git-rev .)
-NAME=logstash-forwarder
+NAME=ffmpeg
 SPEC=$(shell ./make_helper/get-spec ${NAME})
 ARCH=$(shell ./make_helper/get-arch)
 OS_RELEASE=$(shell lsb_release -rs | cut -f1 -d.)
