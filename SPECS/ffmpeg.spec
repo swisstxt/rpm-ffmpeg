@@ -16,6 +16,8 @@ Source:         http://ffmpeg.org/releases/%{name}-%{version}.tar.bz2
 Hyper fast MPEG1/MPEG4/H263/RV and AC3/MPEG audio encoder for RHEL/CENTOS %{os_rel}
 
 %prep
+%setup -q
+test -f version.h || echo "#define FFMPEG_VERSION \"%{evr}\"" > version.h
 
 %build
 
