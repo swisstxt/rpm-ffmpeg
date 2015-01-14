@@ -1,7 +1,7 @@
 %global service_name %{name}
 
 Name:           %{name}
-Version:        2.5.2
+Version:        %{ver}
 Release:        %{rel}%{?dist}
 Summary:        Hyper fast MPEG1/MPEG4/H263/RV and AC3/MPEG audio encoder for RHEL/CENTOS %{os_rel}
 BuildArch:      %{arch}
