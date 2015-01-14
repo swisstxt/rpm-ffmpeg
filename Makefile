@@ -1,5 +1,5 @@
 HOME=$(shell pwd)
-VERSION="2.6.3"
+VERSION="2.5.3"
 RELEASE=$(shell ./make_helper/get-git-rev .)
 NAME=ffmpeg
 SPEC=$(shell ./make_helper/get-spec ${NAME})
@@ -15,7 +15,7 @@ clean:
 	mkdir -p ./SPECS ./SOURCES
 
 get-thirdparty:
-	wget http://ffmpeg.org/releases/${NAME}-${VERSION}.tar.bz2
+	wget http://ffmpeg.org/releases/${NAME}-${VERSION}.tar.bz2 -P ./SOURCES/
 
 tidy-thirdparty:
 	echo "tidy-thirdparty"
