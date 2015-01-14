@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+	echo "USAGE: $(basename $0) [DIR]";
+	exit 1;
+fi
+
+DIR=$1
+
+if [ -d ${DIR} ]; then
+	echo $(cd ${DIR}; git log --pretty=format:'' | wc -l | awk {'print $1'})
+	exit 0;
+else
+	exit 1;
+fi
