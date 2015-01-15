@@ -15,7 +15,7 @@ clean:
 	mkdir -p ./SPECS ./SOURCES
 
 get-thirdparty:
-	wget http://ffmpeg.org/releases/${NAME}-${VERSION}.tar.bz2 -P ./SOURCES/
+	wget http://ffmpeg.org/releases/${NAME}-${VERSION}.tar.bz2 -P ./SOURCES/ -q
 
 tidy-thirdparty:
 	echo "tidy-thirdparty"
