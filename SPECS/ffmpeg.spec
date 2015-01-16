@@ -113,6 +113,8 @@ rm -rf %{buildroot}
 %{_libdir}/*.so
 
 %changelog
-%changelog
 * Fri Jan 16 2015 Daniel Menet <daniel.menet@swisstxt.ch> -%{version}-%{release}
-- Initial release based on https://github.com/lkiesow/matterhorn-rpms/blob/master/specs/ffmpeg.spec
+- Updated LDFLAGS for configure step in order to compile on EL6
+
+* Fri Jan 16 2015 Daniel Menet <daniel.menet@swisstxt.ch> -%{version}-%{release}
+- Initial release based on https://github.com/lkiesow/matterhorn-rpms/blob/master/specs/ffmpeg.spec and http://trac.ffmpeg.org/wiki/CompilationGuide/Centos
