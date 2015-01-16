@@ -15,7 +15,7 @@ BuildRequires:  libvorbis-devel
 BuildRequires:  libvpx-devel >= 1.3.0
 BuildRequires:  yasm
 BuildRequires:  lame-devel
-BuildRequires:  fdk_aac-devel
+BuildRequires:  fdk-aac-devel
 BuildRequires:  x264-devel
 Requires:      %{name}-libs = %{version}-%{release}
 
@@ -25,12 +25,10 @@ Source:         http://ffmpeg.org/releases/%{name}-%{version}.tar.bz2
 Summary:        Library for ffmpeg
 Group:          System Environment/Libraries
 
-
 %package devel
 Summary:        Development files for %{name}
 Group:          Development/Libraries
 Requires:       %{name}-libs = %{version}-%{release}
-
 
 %description
 FFmpeg is a very fast video and audio converter. It can also grab from a
@@ -54,8 +52,6 @@ solution for Linux/Unix. It also includes a digital VCR. It can encode in real
 time in many formats including MPEG1 audio and video, MPEG4, h263, ac3, asf,
 avi, real, mjpeg, and flash.
 This package contains the libraries for ffmpeg
-
-
 
 %prep
 %setup -q
