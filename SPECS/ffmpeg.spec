@@ -60,6 +60,9 @@ test -f version.h || echo "#define FFMPEG_VERSION \"%{evr}\"" > version.h
 %build
 ./configure --prefix=%{_prefix} --libdir=%{_libdir} \
             --shlibdir=%{_libdir} --mandir=%{_mandir} \
+    --enable-shared \
+    --disable-static \
+    --enable-runtime-cpudetect \
 	--enable-gpl \
 	--enable-nonfree \
 	--enable-libfdk_aac \
