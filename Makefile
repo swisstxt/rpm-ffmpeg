@@ -1,10 +1,10 @@
 HOME=$(shell pwd)
 VERSION="2.5.3"
-RELEASE=$(shell ./make_helper/get-git-rev .)
+RELEASE=$(shell /opt/buildhelper/buildhelper getgitrev .)
 NAME=ffmpeg
-SPEC=$(shell ./make_helper/get-spec ${NAME})
-ARCH=$(shell ./make_helper/get-arch)
-OS_RELEASE=$(shell lsb_release -rs | cut -f1 -d.)
+SPEC=$(shell /opt/buildhelper/buildhelper getspec ${NAME})
+ARCH=$(shell /opt/buildhelper/buildhelper getarch)
+OS_RELEASE=$(shell /opt/buildhelper/buildhelper getosrelease)
 
 all: build
 
@@ -14,16 +14,10 @@ clean:
 	mkdir -p ./rpmbuild/SPECS/ ./rpmbuild/SOURCES/
 	mkdir -p ./SPECS ./SOURCES
 
-get-thirdparty:
+getsources:
 	wget http://ffmpeg.org/releases/${NAME}-${VERSION}.tar.bz2 -P ./SOURCES/ -q
 
-tidy-thirdparty:
-	echo "tidy-thirdparty"
-
-build-thirdparty: get-thirdparty
-	echo "build-thirdparty"
-
-build: clean build-thirdparty tidy-thirdparty
+build: clean getsources
 	cp -r ./SPECS/* ./rpmbuild/SPECS/ || true
 	cp -r ./SOURCES/* ./rpmbuild/SOURCES/ || true
 	rpmbuild -ba ${SPEC} \
@@ -37,5 +31,5 @@ build: clean build-thirdparty tidy-thirdparty
 	--define "_rpmdir %{_topdir}" \
 	--define "_srcrpmdir %{_topdir}" \
 
-publish: 
-	echo "publish"
+publish:
+	/opt/buildhelper/buildhelper pushrpm yum-01.stxt.media.int:8080/swisstxt-centos
