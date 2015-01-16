@@ -58,7 +58,7 @@ This package contains the libraries for ffmpeg
 test -f version.h || echo "#define FFMPEG_VERSION \"%{evr}\"" > version.h
 
 %build
-./configure --prefix=%{_prefix} --libdir=%{_libdir} \
+LDFLAGS=-lstdc++ ./configure --prefix=%{_prefix} --libdir=%{_libdir} \
             --shlibdir=%{_libdir} --mandir=%{_mandir} \
     --enable-shared \
     --disable-static \
