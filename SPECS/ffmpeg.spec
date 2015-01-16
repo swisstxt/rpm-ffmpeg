@@ -60,14 +60,14 @@ test -f version.h || echo "#define FFMPEG_VERSION \"%{evr}\"" > version.h
 %build
 ./configure --prefix=%{_prefix} --libdir=%{_libdir} \
             --shlibdir=%{_libdir} --mandir=%{_mandir} \
-	--enable-gpl 
-	--enable-nonfree 
-	--enable-libfdk_aac 
-	--enable-libmp3lame 
-	--enable-libopus 
-	--enable-libvorbis 
-	--enable-libvpx 
-	--enable-libx264
+	--enable-gpl \
+	--enable-nonfree \
+	--enable-libfdk_aac \
+	--enable-libmp3lame \
+	--enable-libopus \
+	--enable-libvorbis \
+	--enable-libvpx \
+	--enable-libx264 \
 %ifarch %ix86
    --extra-cflags="%{optflags}" \
 %else
