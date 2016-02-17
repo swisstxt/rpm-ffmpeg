@@ -1,5 +1,5 @@
 HOME=$(shell pwd)
-VERSION="2.8.4"
+VERSION="3.0"
 RELEASE=$(shell /opt/buildhelper/buildhelper getgitrev .)
 NAME=ffmpeg
 SPEC=$(shell /opt/buildhelper/buildhelper getspec ${NAME})
