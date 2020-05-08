@@ -26,8 +26,8 @@ build: clean
 	--define "_without_x264 1" \
 	--define "_without_x265 1" \
 	--define "_without_xvid 1" \
-	--define "flavor -swisstxt" \
-	--define "progs_suffix -swisstxt"
+	--define "flavor -nofusion" \
+	--define "progs_suffix -nofusion"
 
 docker-build:
 	docker build -t ${PACKAGE} --build-arg groupname=builduser --build-arg groupid=$(shell id -g) --build-arg username=builduser --build-arg userid=$(shell id -u) $(shell pwd) --build-arg package=${PACKAGE} --build-arg dependencies="${DEPENDENCIES}"
