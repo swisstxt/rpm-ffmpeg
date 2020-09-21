@@ -324,6 +324,7 @@ echo "git-snapshot-%{?branch}%{date}-rpmfusion" > VERSION
 %setup -q -n ffmpeg-%{version}
 %endif
 %patch0 -p1
+%patch1 -p1
 # fix -O3 -g in host_cflags
 sed -i "s|check_host_cflags -O3|check_host_cflags %{optflags}|" configure
 mkdir -p _doc/examples
