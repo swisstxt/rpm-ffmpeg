@@ -1,5 +1,5 @@
 diff --git a/libavformat/dashdec.c b/libavformat/dashdec.c
-index f82a750d6f..ba6e227231 100644
+index f82a750d6f..47ffdd89b1 100644
 --- a/libavformat/dashdec.c
 +++ b/libavformat/dashdec.c
 @@ -1396,15 +1396,9 @@ static int64_t calc_cur_seg_no(AVFormatContext *s, struct representation *pls)
@@ -24,7 +24,7 @@ index f82a750d6f..ba6e227231 100644
          }
      } else if (c->is_live && pls->fragment_duration) {
 -        num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time)) * pls->fragment_timescale)  / pls->fragment_duration;
-+        num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time - c->min_buffer_time)) * pls->fragment_timescale)  / pls->fragment_duration;
++        num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time - c->time_shift_buffer_depth)) * pls->fragment_timescale)  / pls->fragment_duration;
      } else if (pls->fragment_duration) {
          num = pls->first_seq_no + (c->media_presentation_duration * pls->fragment_timescale) / pls->fragment_duration;
      }
