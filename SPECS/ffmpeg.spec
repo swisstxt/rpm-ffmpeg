@@ -198,19 +198,9 @@ VCR. It can encode in real time in many formats including MPEG1 audio
 and video, MPEG4, h263, ac3, asf, avi, real, mjpeg, and flash.
 This package contains the libraries for %{name}
 
-%package     -n libavdevice%{?flavor}
-Summary:        Special devices muxing/demuxing library
-Requires:       %{name}-libs%{_isa} = %{version}-%{release}
-
-%description -n libavdevice%{?flavor}
-Libavdevice is a complementary library to libavf "libavformat". It provides
-various "special" platform-specific muxers and demuxers, e.g. for grabbing
-devices, audio capture and playback etc.
-
 %package        devel
 Summary:        Development package for %{name}
 Requires:       %{name}-libs%{_isa} = %{version}-%{release}
-Requires:       libavdevice%{?flavor}%{_isa} = %{version}-%{release}
 Requires:       pkgconfig
 
 %description    devel
@@ -392,7 +382,6 @@ install -pm755 tools/qt-faststart %{buildroot}%{_bindir}
 %endif
 
 %ldconfig_scriptlets  libs
-%ldconfig_scriptlets -n libavdevice%{?flavor}
 
 %if 0%{!?_without_tools:1}
 %files
@@ -412,14 +401,8 @@ install -pm755 tools/qt-faststart %{buildroot}%{_bindir}
 %doc  CREDITS README.md
 %license COPYING.*
 %{_libdir}/lib*.so.*
-%exclude %{_libdir}/libavdevice%{?build_suffix}.so.*
 %{!?flavor:%{_mandir}/man3/lib*.3.*
-%exclude %{_mandir}/man3/libavdevice.3*
 }
-
-%files -n libavdevice%{?flavor}
-%{_libdir}/libavdevice%{?build_suffix}.so.*
-%{!?flavor:%{_mandir}/man3/libavdevice.3*}
 
 %files devel
 %doc MAINTAINERS doc/APIchanges doc/*.txt
