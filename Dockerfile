@@ -1,4 +1,4 @@
-FROM centos:7
+FROM almalinux:9
 
 ARG package
 ARG dependencies=
