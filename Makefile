@@ -30,6 +30,6 @@ build: clean
 	--define "progs_suffix -nofusion"
 
 docker-build:
-	docker build -t ${PACKAGE} --build-arg groupname=builduser --build-arg groupid=$(shell id -g) --build-arg username=builduser --build-arg userid=$(shell id -u) $(shell pwd) --build-arg package=${PACKAGE} --build-arg dependencies="${DEPENDENCIES}"
-	docker run -t --rm -v $(shell pwd):/home/builduser/${PACKAGE} ${PACKAGE} /bin/sh -c "cd /home/builduser/${PACKAGE} && make DISTRIBUTION=${DISTRIBUTION}"
+	podman build -t ${PACKAGE} $(shell pwd) --build-arg package=${PACKAGE} --build-arg dependencies="${DEPENDENCIES}"
+	podman run -t --rm -v $(shell pwd):/build/${PACKAGE} ${PACKAGE} make DISTRIBUTION=${DISTRIBUTION} build
 	sha256sum rpmbuild/*.rpm rpmbuild/*/*.rpm
