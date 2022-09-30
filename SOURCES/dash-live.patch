@@ -1,8 +1,8 @@
 diff --git a/libavformat/dashdec.c b/libavformat/dashdec.c
-index f82a750d6f..47ffdd89b1 100644
+index 2ca91bea8b..f30ab0efb2 100644
 --- a/libavformat/dashdec.c
 +++ b/libavformat/dashdec.c
-@@ -1396,15 +1396,9 @@ static int64_t calc_cur_seg_no(AVFormatContext *s, struct representation *pls)
+@@ -1389,15 +1389,9 @@ static int64_t calc_cur_seg_no(AVFormatContext *s, struct representation *pls)
              else
                  num += pls->first_seq_no;
          } else if (pls->fragment_duration){
@@ -19,19 +19,19 @@ index f82a750d6f..47ffdd89b1 100644
              } else {
                  num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time) - c->suggested_presentation_delay) * pls->fragment_timescale) / pls->fragment_duration;
              }
-@@ -1447,7 +1441,7 @@ static int64_t calc_max_seg_no(struct representation *pls, DASHContext *c)
+@@ -1440,7 +1434,7 @@ static int64_t calc_max_seg_no(struct representation *pls, DASHContext *c)
              }
          }
      } else if (c->is_live && pls->fragment_duration) {
 -        num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time)) * pls->fragment_timescale)  / pls->fragment_duration;
 +        num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time - c->time_shift_buffer_depth)) * pls->fragment_timescale)  / pls->fragment_duration;
      } else if (pls->fragment_duration) {
-         num = pls->first_seq_no + (c->media_presentation_duration * pls->fragment_timescale) / pls->fragment_duration;
+         num = pls->first_seq_no + av_rescale_rnd(1, c->media_presentation_duration * pls->fragment_timescale, pls->fragment_duration, AV_ROUND_UP);
      }
-@@ -1627,6 +1621,7 @@ static struct fragment *get_current_fragment(struct representation *pls)
+@@ -1620,6 +1614,7 @@ static struct fragment *get_current_fragment(struct representation *pls)
              pls->cur_seq_no = calc_cur_seg_no(pls->parent, pls);
          } else if (pls->cur_seq_no > max_seq_no) {
-             av_log(pls->parent, AV_LOG_VERBOSE, "new fragment: min[%"PRId64"] max[%"PRId64"], playlist %d\n", min_seq_no, max_seq_no, (int)pls->rep_idx);
+             av_log(pls->parent, AV_LOG_VERBOSE, "new fragment: min[%"PRId64"] max[%"PRId64"]\n", min_seq_no, max_seq_no);
 +            pls->cur_seq_no = max_seq_no;
          }
          seg = av_mallocz(sizeof(struct fragment));
