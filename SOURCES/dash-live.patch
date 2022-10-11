@@ -1,38 +1,312 @@
 diff --git a/libavformat/dashdec.c b/libavformat/dashdec.c
-index f82a750d6f..47ffdd89b1 100644
+index 2ca91bea8b..25ed69179d 100644
 --- a/libavformat/dashdec.c
 +++ b/libavformat/dashdec.c
-@@ -1396,15 +1396,9 @@ static int64_t calc_cur_seg_no(AVFormatContext *s, struct representation *pls)
-             else
-                 num += pls->first_seq_no;
+@@ -20,6 +20,7 @@
+  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+  */
+ #include <libxml/parser.h>
++#include <stdbool.h>
+ #include "libavutil/bprint.h"
+ #include "libavutil/opt.h"
+ #include "libavutil/time.h"
+@@ -129,21 +130,34 @@ typedef struct DASHContext {
+     struct representation **subtitles;
+ 
+     /* MediaPresentationDescription Attribute */
+-    uint64_t media_presentation_duration;
+-    uint64_t suggested_presentation_delay;
+-    uint64_t availability_start_time;
+-    uint64_t availability_end_time;
+-    uint64_t publish_time;
+-    uint64_t minimum_update_period;
+-    uint64_t time_shift_buffer_depth;
+-    uint64_t min_buffer_time;
++    uint64_t media_presentation_duration_value;
++    uint64_t suggested_presentation_delay_value;
++    uint64_t availability_start_time_value;
++    uint64_t availability_end_time_value;
++    uint64_t publish_time_value;
++    uint64_t minimum_update_period_value;
++    uint64_t time_shift_buffer_depth_value;
++    uint64_t min_buffer_time_value;
+ 
+     /* Period Attribute */
+-    uint64_t period_duration;
+-    uint64_t period_start;
++    uint64_t period_duration_value;
++    uint64_t period_start_value;
+ 
+     /* AdaptationSet Attribute */
+-    char *adaptionset_lang;
++    char *adaptionset_lang_value;
++
++    /* Attribute valid flags (true if the attribute exists in the XML manifest) */
++    bool media_presentation_duration_assigned;
++    bool suggested_presentation_delay_assigned;
++    bool availability_start_time_assigned;
++    bool availability_end_time_assigned;
++    bool publish_time_assigned;
++    bool minimum_update_period_assigned;
++    bool time_shift_buffer_depth_assigned;
++    bool min_buffer_time_assigned;
++    bool period_duration_assigned;
++    bool period_start_assigned;
++    bool adaptionset_lang_assigned;
+ 
+     int is_live;
+     AVIOInterruptCB *interrupt_callback;
+@@ -867,8 +881,8 @@ static int parse_manifest_representation(AVFormatContext *s, const char *url,
+     rep = av_mallocz(sizeof(struct representation));
+     if (!rep)
+         return AVERROR(ENOMEM);
+-    if (c->adaptionset_lang) {
+-        rep->lang = av_strdup(c->adaptionset_lang);
++    if (c->adaptionset_lang_assigned) {
++        rep->lang = av_strdup(c->adaptionset_lang_value);
+         if (!rep->lang) {
+             av_log(s, AV_LOG_ERROR, "alloc language memory failure\n");
+             av_freep(&rep);
+@@ -1106,7 +1120,10 @@ static int parse_manifest_adaptationset_attr(AVFormatContext *s, xmlNodePtr adap
+         av_log(s, AV_LOG_WARNING, "Cannot get AdaptionSet\n");
+         return AVERROR(EINVAL);
+     }
+-    c->adaptionset_lang = xmlGetProp(adaptionset_node, "lang");
++    c->adaptionset_lang_value = xmlGetProp(adaptionset_node, "lang");
++    if (c->adaptionset_lang_value) {
++        c->adaptionset_lang_assigned = true;
++    }
+ 
+     return 0;
+ }
+@@ -1162,8 +1179,9 @@ static int parse_manifest_adaptationset(AVFormatContext *s, const char *url,
+     }
+ 
+ err:
+-    xmlFree(c->adaptionset_lang);
+-    c->adaptionset_lang = NULL;
++    xmlFree(c->adaptionset_lang_value);
++    c->adaptionset_lang_value = NULL;
++    c->adaptionset_lang_assigned = false;
+     return ret;
+ }
+ 
+@@ -1273,29 +1291,37 @@ static int parse_manifest(AVFormatContext *s, const char *url, AVIOContext *in)
+             val = xmlGetProp(node, attr->name);
+ 
+             if (!av_strcasecmp(attr->name, "availabilityStartTime")) {
+-                c->availability_start_time = get_utc_date_time_insec(s, val);
+-                av_log(s, AV_LOG_TRACE, "c->availability_start_time = [%"PRId64"]\n", c->availability_start_time);
++                c->availability_start_time_value = get_utc_date_time_insec(s, val);
++                c->availability_start_time_assigned = true;
++                av_log(s, AV_LOG_TRACE, "c->availability_start_time = [%"PRId64"]\n", c->availability_start_time_value);
+             } else if (!av_strcasecmp(attr->name, "availabilityEndTime")) {
+-                c->availability_end_time = get_utc_date_time_insec(s, val);
+-                av_log(s, AV_LOG_TRACE, "c->availability_end_time = [%"PRId64"]\n", c->availability_end_time);
++                c->availability_end_time_value = get_utc_date_time_insec(s, val);
++                c->availability_end_time_assigned = true;
++                av_log(s, AV_LOG_TRACE, "c->availability_end_time = [%"PRId64"]\n", c->availability_end_time_value);
+             } else if (!av_strcasecmp(attr->name, "publishTime")) {
+-                c->publish_time = get_utc_date_time_insec(s, val);
+-                av_log(s, AV_LOG_TRACE, "c->publish_time = [%"PRId64"]\n", c->publish_time);
++                c->publish_time_value = get_utc_date_time_insec(s, val);
++                c->publish_time_assigned = true;
++                av_log(s, AV_LOG_TRACE, "c->publish_time = [%"PRId64"]\n", c->publish_time_value);
+             } else if (!av_strcasecmp(attr->name, "minimumUpdatePeriod")) {
+-                c->minimum_update_period = get_duration_insec(s, val);
+-                av_log(s, AV_LOG_TRACE, "c->minimum_update_period = [%"PRId64"]\n", c->minimum_update_period);
++                c->minimum_update_period_value = get_duration_insec(s, val);
++                c->minimum_update_period_assigned = true;
++                av_log(s, AV_LOG_TRACE, "c->minimum_update_period = [%"PRId64"]\n", c->minimum_update_period_value);
+             } else if (!av_strcasecmp(attr->name, "timeShiftBufferDepth")) {
+-                c->time_shift_buffer_depth = get_duration_insec(s, val);
+-                av_log(s, AV_LOG_TRACE, "c->time_shift_buffer_depth = [%"PRId64"]\n", c->time_shift_buffer_depth);
++                c->time_shift_buffer_depth_value = get_duration_insec(s, val);
++                c->time_shift_buffer_depth_assigned = true;
++                av_log(s, AV_LOG_TRACE, "c->time_shift_buffer_depth = [%"PRId64"]\n", c->time_shift_buffer_depth_value);
+             } else if (!av_strcasecmp(attr->name, "minBufferTime")) {
+-                c->min_buffer_time = get_duration_insec(s, val);
+-                av_log(s, AV_LOG_TRACE, "c->min_buffer_time = [%"PRId64"]\n", c->min_buffer_time);
++                c->min_buffer_time_value = get_duration_insec(s, val);
++                c->min_buffer_time_assigned = true;
++                av_log(s, AV_LOG_TRACE, "c->min_buffer_time = [%"PRId64"]\n", c->min_buffer_time_value);
+             } else if (!av_strcasecmp(attr->name, "suggestedPresentationDelay")) {
+-                c->suggested_presentation_delay = get_duration_insec(s, val);
+-                av_log(s, AV_LOG_TRACE, "c->suggested_presentation_delay = [%"PRId64"]\n", c->suggested_presentation_delay);
++                c->suggested_presentation_delay_value = get_duration_insec(s, val);
++                c->suggested_presentation_delay_assigned = true;
++                av_log(s, AV_LOG_TRACE, "c->suggested_presentation_delay = [%"PRId64"]\n", c->suggested_presentation_delay_value);
+             } else if (!av_strcasecmp(attr->name, "mediaPresentationDuration")) {
+-                c->media_presentation_duration = get_duration_insec(s, val);
+-                av_log(s, AV_LOG_TRACE, "c->media_presentation_duration = [%"PRId64"]\n", c->media_presentation_duration);
++                c->media_presentation_duration_value = get_duration_insec(s, val);
++                c->media_presentation_duration_assigned = true;
++                av_log(s, AV_LOG_TRACE, "c->media_presentation_duration = [%"PRId64"]\n", c->media_presentation_duration_value);
+             }
+             attr = attr->next;
+             xmlFree(val);
+@@ -1325,12 +1351,30 @@ static int parse_manifest(AVFormatContext *s, const char *url, AVIOContext *in)
+                     attr = attr->next;
+                     xmlFree(val);
+                 }
+-                if ((period_duration_sec) >= (c->period_duration)) {
++                if (c->period_duration_assigned) {
++                    if ((period_duration_sec) >= (c->period_duration_value)) {
++                        period_node = node;
++                        c->period_duration_value = period_duration_sec;
++                        c->period_start_value = period_start_sec;
++                        c->period_start_assigned = true;
++                        if (c->period_start_value > 0) {
++                            c->media_presentation_duration_value = c->period_duration_value;
++                            c->media_presentation_duration_assigned = true;
++                        }
++                    } else {
++                        av_log(s, AV_LOG_VERBOSE, "previous period_duration is larger than new value. ignoring.\n");
++                    }
++                } else {
++                    av_log(s, AV_LOG_VERBOSE, "period_duration attribute unset - updating from calculated value.\n");
+                     period_node = node;
+-                    c->period_duration = period_duration_sec;
+-                    c->period_start = period_start_sec;
+-                    if (c->period_start > 0)
+-                        c->media_presentation_duration = c->period_duration;
++                    c->period_duration_value = period_duration_sec;
++                    c->period_duration_assigned = true;
++                    c->period_start_value = period_start_sec;
++                    c->period_start_assigned = true;
++                    if (c->period_start_value > 0) {
++                        c->media_presentation_duration_value = c->period_duration_value;
++                        c->media_presentation_duration_assigned = true;
++                    }
+                 }
+             } else if (!av_strcasecmp(node->name, "ProgramInformation")) {
+                 parse_programinformation(s, node);
+@@ -1391,15 +1435,54 @@ static int64_t calc_cur_seg_no(AVFormatContext *s, struct representation *pls)
          } else if (pls->fragment_duration){
--            av_log(s, AV_LOG_TRACE, "in fragment_duration mode fragment_timescale = %"PRId64", presentation_timeoffset = %"PRId64"\n", pls->fragment_timescale, pls->presentation_timeoffset);
-+            av_log(s, AV_LOG_TRACE, "in fragment_duration mode fragment_timescale = %"PRId64", presentation_timeoffset = %"PRId64", fragment_duration = %"PRId64", first_seq_no = %"PRId64", availability_start_time = %"PRId64", availability_end_time = %"PRId64", publish_time = %"PRId64", time_shift_buffer_depth = %"PRId64", suggested_presentation_delay = %"PRId64", min_buffer_time = %"PRId64"\n", pls->fragment_timescale, pls->presentation_timeoffset, pls->fragment_duration, pls->first_seq_no, c->availability_start_time, c->availability_end_time, c->publish_time, c->time_shift_buffer_depth, c->suggested_presentation_delay, c->min_buffer_time);
+             av_log(s, AV_LOG_TRACE, "in fragment_duration mode fragment_timescale = %"PRId64", presentation_timeoffset = %"PRId64"\n", pls->fragment_timescale, pls->presentation_timeoffset);
              if (pls->presentation_timeoffset) {
-                 num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time) * pls->fragment_timescale)-pls->presentation_timeoffset) / pls->fragment_duration - c->min_buffer_time;
+-                num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time) * pls->fragment_timescale)-pls->presentation_timeoffset) / pls->fragment_duration - c->min_buffer_time;
 -            } else if (c->publish_time > 0 && !c->availability_start_time) {
 -                if (c->min_buffer_time) {
 -                    num = pls->first_seq_no + (((c->publish_time + pls->fragment_duration) - c->suggested_presentation_delay) * pls->fragment_timescale) / pls->fragment_duration - c->min_buffer_time;
--                } else {
++                if (c->availability_start_time_assigned && c->min_buffer_time_assigned) {
++                    num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time_value) * pls->fragment_timescale)-pls->presentation_timeoffset) / pls->fragment_duration - c->min_buffer_time_assigned;
++                } else {
++                    av_log(s, AV_LOG_WARNING, "availability_start_time and/or min_buffer_time attributes unset - using zero values. segment numbers may be incorrect.\n");
++                    if (c->availability_start_time_assigned) {
++                        num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time_value) * pls->fragment_timescale)-pls->presentation_timeoffset) / pls->fragment_duration;
++                    } else if (c->min_buffer_time_assigned) {
++                        num = pls->first_seq_no + (((get_current_time_in_sec()) * pls->fragment_timescale)-pls->presentation_timeoffset) / pls->fragment_duration - c->min_buffer_time_value;
++                    } else {
++                        num = pls->first_seq_no + (((get_current_time_in_sec()) * pls->fragment_timescale)-pls->presentation_timeoffset) / pls->fragment_duration;
++                    }
++                }
++            } else if (c->publish_time_assigned && c->publish_time_value > 0 && !c->availability_start_time_assigned) {
++                // FIXME is publish_time_value > 0 a required condition, or are we only checking for existence of the attribute?
++                if (c->min_buffer_time_assigned) {
++                    if (c->suggested_presentation_delay_assigned) {
++                        num = pls->first_seq_no + (((c->publish_time_value + pls->fragment_duration) - c->suggested_presentation_delay_value) * pls->fragment_timescale) / pls->fragment_duration - c->min_buffer_time_value;
++                    } else {
++                        av_log(s, AV_LOG_WARNING, "suggested_presentation_delay attribute unset - using zero value. segment numbers may be incorrect.\n");
++                        num = pls->first_seq_no + ((c->publish_time_value + pls->fragment_duration) * pls->fragment_timescale) / pls->fragment_duration - c->min_buffer_time_value;
++                    }
+                 } else {
 -                    num = pls->first_seq_no + (((c->publish_time - c->time_shift_buffer_depth + pls->fragment_duration) - c->suggested_presentation_delay) * pls->fragment_timescale) / pls->fragment_duration;
--                }
++                    if (c->time_shift_buffer_depth_assigned && c->suggested_presentation_delay_assigned) {
++                        num = pls->first_seq_no + (((c->publish_time_value - c->time_shift_buffer_depth_value + pls->fragment_duration) - c->suggested_presentation_delay_value) * pls->fragment_timescale) / pls->fragment_duration;
++                    } else {
++                        av_log(s, AV_LOG_WARNING, "time_shift_buffer_depth and/or suggested_presentation_delay attributes unset - using zero values. segment numbers may be incorrect.\n");
++                        if (c->time_shift_buffer_depth_assigned) {
++                            num = pls->first_seq_no + ((c->publish_time_value - c->time_shift_buffer_depth_value + pls->fragment_duration) * pls->fragment_timescale) / pls->fragment_duration;
++                        } else if (c->suggested_presentation_delay_assigned) {
++                            num = pls->first_seq_no + (((c->publish_time_value + pls->fragment_duration) - c->suggested_presentation_delay_value) * pls->fragment_timescale) / pls->fragment_duration;
++                        } else {
++                            num = pls->first_seq_no + ((c->publish_time_value + pls->fragment_duration) * pls->fragment_timescale) / pls->fragment_duration;
++                        }
++                    }
+                 }
              } else {
-                 num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time) - c->suggested_presentation_delay) * pls->fragment_timescale) / pls->fragment_duration;
+-                num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time) - c->suggested_presentation_delay) * pls->fragment_timescale) / pls->fragment_duration;
++                if (c->availability_start_time_assigned && c->suggested_presentation_delay_assigned) {
++                    num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time_value) - c->suggested_presentation_delay_value) * pls->fragment_timescale) / pls->fragment_duration;
++                } else {
++                    av_log(s, AV_LOG_WARNING, "availability_start_time and/or suggested_presentation_delay attributes unset - using zero values. segment numbers may be incorrect.\n");
++                    if (c->availability_start_time_assigned) {
++                        num = pls->first_seq_no + ((get_current_time_in_sec() - c->availability_start_time_value) * pls->fragment_timescale) / pls->fragment_duration;
++                    } else if (c->suggested_presentation_delay_assigned) {
++                        num = pls->first_seq_no + ((get_current_time_in_sec() - c->suggested_presentation_delay_value) * pls->fragment_timescale) / pls->fragment_duration;
++                    } else {
++                        num = pls->first_seq_no + (get_current_time_in_sec() * pls->fragment_timescale) / pls->fragment_duration;
++                    }
++                }
              }
-@@ -1447,7 +1441,7 @@ static int64_t calc_max_seg_no(struct representation *pls, DASHContext *c)
+         }
+     } else {
+@@ -1415,7 +1498,18 @@ static int64_t calc_min_seg_no(AVFormatContext *s, struct representation *pls)
+ 
+     if (c->is_live && pls->fragment_duration) {
+         av_log(s, AV_LOG_TRACE, "in live mode\n");
+-        num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time) - c->time_shift_buffer_depth) * pls->fragment_timescale) / pls->fragment_duration;
++        if (c->availability_start_time_assigned && c->time_shift_buffer_depth_assigned) {
++            num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time_value) - c->time_shift_buffer_depth_value) * pls->fragment_timescale) / pls->fragment_duration;
++        } else {
++            av_log(s, AV_LOG_WARNING, "availability_start_time and/or time_shift_buffer_depth attributes unset - using zero values. segment numbers may be incorrect.\n");
++            if (c->availability_start_time_assigned) {
++                num = pls->first_seq_no + ((get_current_time_in_sec() - c->availability_start_time_value) * pls->fragment_timescale) / pls->fragment_duration;
++            } else if (c->time_shift_buffer_depth_assigned) {
++                num = pls->first_seq_no + ((get_current_time_in_sec() - c->time_shift_buffer_depth_value) * pls->fragment_timescale) / pls->fragment_duration;
++            } else {
++                num = pls->first_seq_no + (get_current_time_in_sec() * pls->fragment_timescale) / pls->fragment_duration;
++            }
++        }
+     } else {
+         num = pls->first_seq_no;
+     }
+@@ -1434,15 +1528,30 @@ static int64_t calc_max_seg_no(struct representation *pls, DASHContext *c)
+         for (i = 0; i < pls->n_timelines; i++) {
+             if (pls->timelines[i]->repeat == -1) {
+                 int length_of_each_segment = pls->timelines[i]->duration / pls->fragment_timescale;
+-                num =  c->period_duration / length_of_each_segment;
++                if (c->period_duration_assigned) {
++                    num = c->period_duration_value / length_of_each_segment;
++                } else {
++                    av_log(NULL, AV_LOG_WARNING, "period_duration attribute unset - using zero value. segment numbers may be incorrect.\n");
++                    num = 0;
++                }
+             } else {
+                 num += pls->timelines[i]->repeat;
              }
          }
      } else if (c->is_live && pls->fragment_duration) {
 -        num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time)) * pls->fragment_timescale)  / pls->fragment_duration;
-+        num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time - c->time_shift_buffer_depth)) * pls->fragment_timescale)  / pls->fragment_duration;
++        if (c->availability_start_time_assigned) {
++            num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time_value)) * pls->fragment_timescale)  / pls->fragment_duration;
++        } else {
++            av_log(NULL, AV_LOG_WARNING, "availability_start_time attribute unset - using zero value. segment numbers may be incorrect.\n");
++            num = pls->first_seq_no + (get_current_time_in_sec() * pls->fragment_timescale)  / pls->fragment_duration;
++        }
      } else if (pls->fragment_duration) {
-         num = pls->first_seq_no + (c->media_presentation_duration * pls->fragment_timescale) / pls->fragment_duration;
+-        num = pls->first_seq_no + av_rescale_rnd(1, c->media_presentation_duration * pls->fragment_timescale, pls->fragment_duration, AV_ROUND_UP);
++        if (c->media_presentation_duration_assigned) {
++            num = pls->first_seq_no + av_rescale_rnd(1, c->media_presentation_duration_value * pls->fragment_timescale, pls->fragment_duration, AV_ROUND_UP);
++        } else {
++            av_log(NULL, AV_LOG_WARNING, "media_presentation_duration attribute unset - using zero value. segment numbers may be incorrect.\n");
++            num = pls->first_seq_no + av_rescale_rnd(1, 0, pls->fragment_duration, AV_ROUND_UP);
++        }
      }
-@@ -1627,6 +1621,7 @@ static struct fragment *get_current_fragment(struct representation *pls)
-             pls->cur_seq_no = calc_cur_seg_no(pls->parent, pls);
-         } else if (pls->cur_seq_no > max_seq_no) {
-             av_log(pls->parent, AV_LOG_VERBOSE, "new fragment: min[%"PRId64"] max[%"PRId64"], playlist %d\n", min_seq_no, max_seq_no, (int)pls->rep_idx);
-+            pls->cur_seq_no = max_seq_no;
-         }
-         seg = av_mallocz(sizeof(struct fragment));
-         if (!seg) {
+ 
+     return num;
+@@ -2040,7 +2149,12 @@ static int dash_read_header(AVFormatContext *s)
+     /* If this isn't a live stream, fill the total duration of the
+      * stream. */
+     if (!c->is_live) {
+-        s->duration = (int64_t) c->media_presentation_duration * AV_TIME_BASE;
++        if (c->media_presentation_duration_assigned) {
++            s->duration = (int64_t) c->media_presentation_duration_value * AV_TIME_BASE;
++        } else {
++            av_log(NULL, AV_LOG_WARNING, "media_presentation_duration attribute unset - using zero value. segment numbers may be incorrect.\n");
++            s->duration = 0;
++        }
+     } else {
+         av_dict_set(&c->avio_opts, "seekable", "0", 0);
+     }
