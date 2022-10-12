@@ -34,6 +34,6 @@ build: clean
 	--define "build_suffix -nofusion"
 
 docker-build:
-	docker build -t ${PACKAGE} --build-arg groupname=builduser --build-arg groupid=$(shell id -g) --build-arg username=builduser --build-arg userid=$(shell id -u) $(shell pwd) --build-arg package=${PACKAGE} --build-arg dependencies="${DEPENDENCIES}"
-	docker run -t --rm -v $(shell pwd):/home/builduser/${PACKAGE} ${PACKAGE} /bin/sh -c "cd /home/builduser/${PACKAGE} && make DISTRIBUTION=${DISTRIBUTION} VERSION=${VERSION} COMMIT=${COMMIT} VERSION_SUFFIX=${VERSION_SUFFIX} build"
+	docker build -t ${PACKAGE} $(shell pwd) --build-arg package=${PACKAGE} --build-arg dependencies="${DEPENDENCIES}"
+	docker run -t --rm -v $(shell pwd):/build/${PACKAGE} ${PACKAGE} make DISTRIBUTION=${DISTRIBUTION} VERSION=${VERSION} COMMIT=${COMMIT} VERSION_SUFFIX=${VERSION_SUFFIX} build
 	sha256sum rpmbuild/*.rpm rpmbuild/*/*.rpm
