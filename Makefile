@@ -4,11 +4,12 @@ DEPENDENCIES=redhat-rpm-config epel-rpm-macros alsa-lib-devel bzip2-devel fontco
 DISTRIBUTION=.el9.swisstxt
 VERSION=$(shell awk '/^Version:/{print $$2}' < SPECS/${PACKAGE}.spec)
 COMMIT=$(shell git rev-parse HEAD)
+VERSION_SUFFIX=.git$(shell git rev-parse --short HEAD)
 
 all: build
 
 clean:
-	rm -rf ./rpmbuild
+	rm -rf ./rpmbuild/*
 	mkdir -p ./rpmbuild/SPECS/ ./rpmbuild/SOURCES/
 
 download-upstream:
@@ -18,8 +19,7 @@ build: clean
 	cp -r ./SPECS/* ./rpmbuild/SPECS/
 	cp -r ./SOURCES/* ./rpmbuild/SOURCES/
 	rpmbuild -ba SPECS/${PACKAGE}.spec \
-	--define "commit ${COMMIT}" \
-	--define "dist ${DISTRIBUTION}" \
+	--define "dist ${VERSION_SUFFIX}${DISTRIBUTION}" \
 	--define "_topdir %(pwd)/rpmbuild" \
 	--define "_builddir %{_topdir}" \
 	--define "_rpmdir %{_topdir}" \
@@ -33,6 +33,6 @@ build: clean
 	--define "progs_suffix -nofusion"
 
 docker-build:
-	podman build -t ${PACKAGE} $(shell pwd) --build-arg package=${PACKAGE} --build-arg dependencies="${DEPENDENCIES}"
-	podman run -t --rm -v $(shell pwd):/build/${PACKAGE} ${PACKAGE} make DISTRIBUTION=${DISTRIBUTION} COMMIT=${COMMIT} build
+	docker build -t ${PACKAGE} --build-arg groupname=builduser --build-arg groupid=$(shell id -g) --build-arg username=builduser --build-arg userid=$(shell id -u) $(shell pwd) --build-arg package=${PACKAGE} --build-arg dependencies="${DEPENDENCIES}"
+	docker run -t --rm -v $(shell pwd):/home/builduser/${PACKAGE} ${PACKAGE} /bin/sh -c "cd /home/builduser/${PACKAGE} && make DISTRIBUTION=${DISTRIBUTION} VERSION=${VERSION} COMMIT=${COMMIT} VERSION_SUFFIX=${VERSION_SUFFIX} build"
 	sha256sum rpmbuild/*.rpm rpmbuild/*/*.rpm
