@@ -1,0 +1,48 @@
+name: Release RPMs
+
+on:
+  push:
+    tags: "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Build using container
+      run: make COMMIT=${GITHUB_SHA} GIT_TAG=${GITHUB_REF_NAME} docker-build
+
+    - name: Upload built RPMs
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        name: ffmpeg-nofusion
+        path: rpmbuild/*/*.rpm
+        if-no-files-found: warn
+        retention-days: 1
+
+  release:
+    runs-on: ubuntu-latest
+
+    needs: [build]
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: ffmpeg-nofusion
+
+    - name: List artifacts
+      run: ls -lR
+
+    - name: Create GitHub release
+      uses: swisstxt/github-action-release-artifacts@main
+      with:
+        tag: ${{ github.ref_name }}
+        create_release: true
+        release_name: "ffmpeg-nofusion ${{ github.ref_name }}"

@@ -3,7 +3,6 @@ name: Build test RPMs
 on:
   push:
     branches: [ "centos7", "el9" ]
-    tags: "*"
   pull_request:
     branches: [ "centos7", "el9" ]
 
