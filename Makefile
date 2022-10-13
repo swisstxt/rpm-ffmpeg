@@ -3,8 +3,14 @@ PACKAGE=ffmpeg
 DEPENDENCIES=redhat-rpm-config epel-rpm-macros alsa-lib-devel bzip2-devel fontconfig-devel freetype-devel fribidi-devel gnutls-devel gsm-devel lame-devel jack-audio-connection-kit-devel ladspa-devel libass-devel libbluray-devel libcdio-paranoia-devel libdrm-devel libgcrypt-devel libGL-devel libmodplug-devel librsvg2-devel libssh-devel libtheora-devel libv4l-devel libva-devel libvdpau-devel libvorbis-devel nasm nv-codec-headers libxcb-devel openal-soft-devel opencl-headers ocl-icd-devel openjpeg2-devel pulseaudio-libs-devel SDL2-devel soxr-devel speex-devel texinfo vid.stab-devel zimg-devel zlib-devel zvbi-devel libxml2-devel AMF-devel ilbc-devel libaom-devel libbs2b-devel libchromaprint-devel libdav1d-devel libmysofa-devel libopenmpt-devel libsmbclient-devel libvmaf-devel libvpx-devel libwebp-devel opus-devel pkgconfig(libmfx) pkgconfig(srt) rubberband-devel snappy-devel tesseract-devel twolame-devel vapoursynth-devel wavpack-devel zeromq-devel
 DISTRIBUTION=.el9.swisstxt
 VERSION=$(shell awk '/^Version:/{print $$2}' < SPECS/${PACKAGE}.spec)
-COMMIT=$(shell git rev-parse HEAD)
-VERSION_SUFFIX=.git$(shell git rev-parse --short HEAD)
+COMMIT:=$(shell git rev-parse HEAD)
+SHORT_COMMIT:=$(shell git rev-parse --short ${COMMIT})
+GIT_TAG:=$(shell git tag --points-at ${COMMIT})
+ifeq '${GIT_TAG}' ''
+VERSION_SUFFIX:=.git${SHORT_COMMIT}
+else
+VERSION_SUFFIX:=.${GIT_TAG}.git${SHORT_COMMIT}
+endif
 
 all: build
 
