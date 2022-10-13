@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Build using Podman
+    - name: Build using container
       run: make docker-build
   
     - name: Upload built RPMs

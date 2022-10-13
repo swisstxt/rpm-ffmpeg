@@ -34,6 +34,6 @@ build: clean
 	--define "build_suffix -nofusion"
 
 docker-build:
-	docker build -t ${PACKAGE} $(shell pwd) --build-arg package=${PACKAGE} --build-arg dependencies="${DEPENDENCIES}"
-	docker run -t --rm -v $(shell pwd):/build/${PACKAGE} ${PACKAGE} make DISTRIBUTION=${DISTRIBUTION} VERSION=${VERSION} COMMIT=${COMMIT} VERSION_SUFFIX=${VERSION_SUFFIX} build
+	podman build -t ${PACKAGE} $(shell pwd) --build-arg package=${PACKAGE} --build-arg dependencies="${DEPENDENCIES}"
+	podman run -t --rm -v $(shell pwd):/build/${PACKAGE} ${PACKAGE} make DISTRIBUTION=${DISTRIBUTION} VERSION=${VERSION} COMMIT=${COMMIT} VERSION_SUFFIX=${VERSION_SUFFIX} build
 	sha256sum rpmbuild/*.rpm rpmbuild/*/*.rpm
