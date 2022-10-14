@@ -16,7 +16,7 @@ jobs:
       # Feed the version and release according to the Git tag.
       # The tag format should be: 1.2.3-444
       # 1.2.3 is the version, 444 is the release. Extra dashes are considered part of the release.
-      run: make COMMIT=${GITHUB_SHA} GIT_TAG=${GITHUB_REF_NAME} VERSION=.${GITHUB_REF_NAME%%-*} RELEASE=.${GITHUB_REF_NAME#*-} docker-build
+      run: make COMMIT=${GITHUB_SHA} GIT_TAG=${GITHUB_REF_NAME} VERSION=${GITHUB_REF_NAME%%-*} RELEASE=${GITHUB_REF_NAME#*-} docker-build
       shell: bash
 
     - name: Upload built RPMs
