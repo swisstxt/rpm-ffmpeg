@@ -8,6 +8,16 @@ It also contains bug fixes that are not available upstream.
 
 * A patch for [#8522](https://trac.ffmpeg.org/ticket/8522) - fixes MPEG-DASH segment number calculation for certain edge cases
 
+## Releases
+
+Releases are built by a GitHub action that triggers on tag creation.
+
+Each commit or pull request starts a test build that can be used to verify the resulting package.
+The build artifacts can be found under the Actions job corresponding to the commit. 
+
+Once you are satisfied, create a tag for the full package version (e.g. `5.1.2-1`), and another workflow will
+automatically launch a release build and create a GitHub release with the built packages.
+
 ## Legal
 
 This project is Copyright © 2015-2022 SWISS TXT AG. All rights reserved.
