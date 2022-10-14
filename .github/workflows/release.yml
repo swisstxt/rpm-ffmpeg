@@ -19,11 +19,16 @@ jobs:
       run: make COMMIT=${GITHUB_SHA} GIT_TAG=${GITHUB_REF_NAME} VERSION=${GITHUB_REF_NAME%%-*} RELEASE=${GITHUB_REF_NAME#*-} docker-build
       shell: bash
 
+    - name: Calculate checksums
+      run: find rpmbuild -maxdepth 1 -type d -exec sh -c 'cd "{}"; sha256sum *.rpm' \; > rpmbuild/SHA256SUMS
+
     - name: Upload built RPMs
       uses: actions/upload-artifact@v3.1.0
       with:
         name: ffmpeg-nofusion
-        path: rpmbuild/*/*.rpm
+        path: |
+          rpmbuild/*/*.rpm
+          rpmbuild/SHA256SUMS
         if-no-files-found: warn
         retention-days: 1
 
