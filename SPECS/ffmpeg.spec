@@ -1,9 +1,14 @@
 # TODO: add make test to %%check section
 
+# dev build
 #global branch  oldabi-
 #global date    20220104
 #global commit  311ea9c529117fb8e38abd6ca7e81782b6b21257
-#global rel %(c=%{commit}; echo ${c:0:7})
+#global rel %{date}git%(c=%{commit}; echo ${c:0:7})
+
+# release build
+%{?!ver: %global ver 5.1.2}
+%{?!rel: %global rel 1}
 
 %undefine _package_note_file
 
@@ -108,10 +113,10 @@ ExclusiveArch: armv7hnl
 %global ffmpeg_license %{?lesser}GPLv2+
 %endif
 
-Summary:        Digital VCR and streaming server
+Summary:        A complete, cross-platform solution to record, convert and stream audio and video
 Name:           ffmpeg%{?flavor}
-Version:        5.1.2
-Release:        1%{?date:.%{?date}%{?date:git}%{?rel}}%{?dist}
+Version:        %{ver}
+Release:        %{rel}%{?dist}
 License:        %{ffmpeg_license}
 URL:            http://ffmpeg.org/
 %if 0%{?date}
