@@ -12,11 +12,17 @@ It also contains bug fixes that are not available upstream.
 
 Releases are built by a GitHub action that triggers on tag creation.
 
+Important: Make sure to update the VERSION variable in the Makefile to the FFmpeg release you
+want to build, and the RELEASE variable to a patch level. When you update the FFmpeg version,
+you can start with RELEASE 1. If you only make modifications to the build script, dependencies
+or patches, increment the RELEASE. Do not forget this, or the built package won't have a
+newer version than the previous one.
+
 Each commit or pull request starts a test build that can be used to verify the resulting package.
 The build artifacts can be found under the Actions job corresponding to the commit. 
 
-Once you are satisfied, create a tag for the full package version (e.g. `5.1.2-1`), and another workflow will
-automatically launch a release build and create a GitHub release with the built packages.
+Once you are satisfied, create a tag for the full package version (this should be `${VERSION}-${RELEASE}`),
+and another workflow will automatically launch a release build and create a GitHub release with the built packages.
 
 ## Legal
 
