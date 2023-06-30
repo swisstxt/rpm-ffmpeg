@@ -26,14 +26,14 @@ and another workflow will automatically launch a release build and create a GitH
 
 ## Legal
 
-This project is Copyright © 2015-2022 SWISS TXT AG. All rights reserved.
+This project is Copyright © 2015-2023 SWISS TXT AG. All rights reserved.
 
 The custom build scripts (Makefiles, spec files, build automation, etc.) are released under the MIT license.
 See the [LICENSE](LICENSE) file for details.
 
 The full FFmpeg source code is licensed under the GNU General Public License (GPL) version 2 or later.
-See [ffmpeg.org/legal.html](https://ffmpeg.org/legal.html) for more information.
+See [LICENSE.FFMPEG](LICENSE.FFMPEG) for more information.
 
 The RPM spec file is based on [RPMFusion/ffmpeg](https://github.com/rpmfusion/ffmpeg).
-Licensed under the "Current Default License", which is the MIT license, as specified in the
-[RPM Fusion Wiki](https://rpmfusion.org/wiki/Legal:RPM%20Fusion_Project_Contributor_Agreement).
+Licensed under the "Current Default License", which was the MIT license at the time the spec file was obtained,
+as specified in the [RPM Fusion Wiki](https://rpmfusion.org/wiki/Legal:RPM%20Fusion_Project_Contributor_Agreement).
