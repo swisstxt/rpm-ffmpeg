@@ -4,7 +4,7 @@
 #global branch  oldabi-
 #global date    20220104
 #global commit  311ea9c529117fb8e38abd6ca7e81782b6b21257
-#global rel %{date}git%(c=%{commit}; echo ${c:0:7})
+#global rel ${date}git$(c=${commit}; echo ${c:0:7})
 
 # release build
 %{?!ver: %global ver 5.1.2}
