@@ -6,6 +6,11 @@ VERSION=6.0
 RELEASE=1
 COMMIT:=$(shell git rev-parse HEAD)
 SHORT_COMMIT:=$(shell git rev-parse --short ${COMMIT})
+GIT_TAG:=$(shell git tag --points-at ${COMMIT})
+ifeq '${GIT_TAG}' ''
+# development release, add git commit sha
+RELEASE:=${RELEASE}.git${SHORT_COMMIT}
+endif
 
 all: build
 
@@ -21,7 +26,7 @@ build: clean
 	cp -r ./SOURCES/* ./rpmbuild/SOURCES/
 	rpmbuild -ba SPECS/${PACKAGE}.spec \
 	--define "ver ${VERSION}" \
-	--define "rel ${RELEASE}.git${SHORT_COMMIT}" \
+	--define "rel ${RELEASE}" \
 	--define "dist ${DISTRIBUTION}" \
 	--define "_topdir %(pwd)/rpmbuild" \
 	--define "_builddir %{_topdir}" \
