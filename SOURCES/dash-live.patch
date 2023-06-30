@@ -1,5 +1,15 @@
+From 15a7c8d20f2dc1bfcd36d2c9a8e9b953262a8859 Mon Sep 17 00:00:00 2001
+From: Gregor Riepl <gregor.riepl@swisstxt.ch>
+Date: Fri, 7 Oct 2022 14:43:11 +0200
+Subject: [PATCH] Handle unset manifest attributes in DASH decoder better
+
+Added stdbool include
+---
+ libavformat/dashdec.c | 210 ++++++++++++++++++++++++++++++++----------
+ 1 file changed, 162 insertions(+), 48 deletions(-)
+
 diff --git a/libavformat/dashdec.c b/libavformat/dashdec.c
-index 2ca91bea8b..25ed69179d 100644
+index 29d4680c68..f25d1a2bdf 100644
 --- a/libavformat/dashdec.c
 +++ b/libavformat/dashdec.c
 @@ -20,6 +20,7 @@
@@ -191,7 +201,8 @@ index 2ca91bea8b..25ed69179d 100644
 -                    num = pls->first_seq_no + (((c->publish_time + pls->fragment_duration) - c->suggested_presentation_delay) * pls->fragment_timescale) / pls->fragment_duration - c->min_buffer_time;
 +                if (c->availability_start_time_assigned && c->min_buffer_time_assigned) {
 +                    num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time_value) * pls->fragment_timescale)-pls->presentation_timeoffset) / pls->fragment_duration - c->min_buffer_time_assigned;
-+                } else {
+                 } else {
+-                    num = pls->first_seq_no + (((c->publish_time - c->time_shift_buffer_depth + pls->fragment_duration) - c->suggested_presentation_delay) * pls->fragment_timescale) / pls->fragment_duration;
 +                    av_log(s, AV_LOG_WARNING, "availability_start_time and/or min_buffer_time attributes unset - using zero values. segment numbers may be incorrect.\n");
 +                    if (c->availability_start_time_assigned) {
 +                        num = pls->first_seq_no + (((get_current_time_in_sec() - c->availability_start_time_value) * pls->fragment_timescale)-pls->presentation_timeoffset) / pls->fragment_duration;
@@ -210,8 +221,7 @@ index 2ca91bea8b..25ed69179d 100644
 +                        av_log(s, AV_LOG_WARNING, "suggested_presentation_delay attribute unset - using zero value. segment numbers may be incorrect.\n");
 +                        num = pls->first_seq_no + ((c->publish_time_value + pls->fragment_duration) * pls->fragment_timescale) / pls->fragment_duration - c->min_buffer_time_value;
 +                    }
-                 } else {
--                    num = pls->first_seq_no + (((c->publish_time - c->time_shift_buffer_depth + pls->fragment_duration) - c->suggested_presentation_delay) * pls->fragment_timescale) / pls->fragment_duration;
++                } else {
 +                    if (c->time_shift_buffer_depth_assigned && c->suggested_presentation_delay_assigned) {
 +                        num = pls->first_seq_no + (((c->publish_time_value - c->time_shift_buffer_depth_value + pls->fragment_duration) - c->suggested_presentation_delay_value) * pls->fragment_timescale) / pls->fragment_duration;
 +                    } else {
@@ -310,3 +320,6 @@ index 2ca91bea8b..25ed69179d 100644
      } else {
          av_dict_set(&c->avio_opts, "seekable", "0", 0);
      }
+-- 
+2.39.2
+
